@@ -1,0 +1,74 @@
+name: gummies-ecommerce
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gummies_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-gummies_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - gummies_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: gummies_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web console
+    volumes:
+      - gummies_minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Uncomment once the app is ready to run as a container instead of `npm run dev`.
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: gummies_backend
+  #   restart: unless-stopped
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     # Inside the compose network containers reach each other by service
+  #     # name, not "localhost" - override just the two host-dependent values
+  #     # from .env (which is written for the app running on the host).
+  #     DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-gummies_db}
+  #     MINIO_ENDPOINT: minio
+  #   ports:
+  #     - "${PORT:-4000}:${PORT:-4000}"
+  #   volumes:
+  #     - ./logs:/app/logs
+  #     - gummies_uploads_data:/app/uploads
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     minio:
+  #       condition: service_healthy
+
+volumes:
+  gummies_pg_data:
+    name: gummies_pg_data
+  gummies_minio_data:
+    name: gummies_minio_data
+  # Only needed once the `app` service above is uncommented.
+  # gummies_uploads_data:
+  #   name: gummies_uploads_data
