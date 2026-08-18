@@ -13,6 +13,14 @@ export interface ProductRecord {
   updated_at: Date;
 }
 
+// The shape products.repository.list() actually returns: each row gets its
+// primary (or first) image joined in, since a customer-facing product grid
+// needs a thumbnail without an N+1 request per card.
+export interface ProductListItem extends ProductRecord {
+  primary_image_url: string | null;
+  primary_image_alt: string | null;
+}
+
 export interface ProductVariantRecord {
   id: string;
   product_id: string;

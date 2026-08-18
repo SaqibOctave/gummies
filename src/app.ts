@@ -15,7 +15,7 @@ export function createApp(): Express {
   app.use(securityHeaders);
   app.use(
     cors({
-      origin: env.clientUrl,
+      origin: env.clientUrls,
       credentials: true,
     })
   );

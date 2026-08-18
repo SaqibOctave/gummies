@@ -1,5 +1,5 @@
 import { query } from '../../config/database';
-import { CategoryRecord } from './categories.types';
+import { CategoryRecord, CategoryListItem } from './categories.types';
 
 export interface CreateCategoryInput {
   name: string;
@@ -50,11 +50,13 @@ export const categoriesRepository = {
     return result.rows[0] ?? null;
   },
 
-  async list(activeOnly: boolean): Promise<CategoryRecord[]> {
-    const result = await query<CategoryRecord>(
-      `SELECT * FROM categories
-       ${activeOnly ? 'WHERE is_active = true' : ''}
-       ORDER BY sort_order ASC, name ASC`
+  async list(activeOnly: boolean): Promise<CategoryListItem[]> {
+    const result = await query<CategoryListItem>(
+      `SELECT c.*, m.url AS image_url, m.alt_text AS image_alt_text
+       FROM categories c
+       LEFT JOIN media m ON m.id = c.image_id
+       ${activeOnly ? 'WHERE c.is_active = true' : ''}
+       ORDER BY c.sort_order ASC, c.name ASC`
     );
     return result.rows;
   },

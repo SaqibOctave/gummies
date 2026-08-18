@@ -1,5 +1,5 @@
 import { query } from '../../config/database';
-import { ProductRecord } from './products.types';
+import { ProductRecord, ProductListItem } from './products.types';
 
 export interface CreateProductInput {
   categoryId?: string | null;
@@ -65,32 +65,41 @@ export const productsRepository = {
     filter: ProductListFilter,
     limit: number,
     offset: number
-  ): Promise<{ items: ProductRecord[]; total: number }> {
+  ): Promise<{ items: ProductListItem[]; total: number }> {
     const conditions: string[] = [];
     const params: unknown[] = [];
 
     if (filter.categoryId) {
       params.push(filter.categoryId);
-      conditions.push(`category_id = $${params.length}`);
+      conditions.push(`p.category_id = $${params.length}`);
     }
     if (filter.activeOnly) {
-      conditions.push('is_active = true');
+      conditions.push('p.is_active = true');
     }
     if (filter.search) {
       params.push(`%${filter.search}%`);
-      conditions.push(`name ILIKE $${params.length}`);
+      conditions.push(`p.name ILIKE $${params.length}`);
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    const items = await query<ProductRecord>(
-      `SELECT * FROM products ${where} ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${
-        params.length + 2
-      }`,
+    const items = await query<ProductListItem>(
+      `SELECT p.*, img.url AS primary_image_url, img.alt_text AS primary_image_alt
+       FROM products p
+       LEFT JOIN LATERAL (
+         SELECT m.url, m.alt_text
+         FROM product_images pi
+         JOIN media m ON m.id = pi.media_id
+         WHERE pi.product_id = p.id
+         ORDER BY pi.is_primary DESC, pi.sort_order ASC
+         LIMIT 1
+       ) img ON true
+       ${where}
+       ORDER BY p.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
       [...params, limit, offset]
     );
     const count = await query<{ count: string }>(
-      `SELECT COUNT(*)::text AS count FROM products ${where}`,
+      `SELECT COUNT(*)::text AS count FROM products p ${where}`,
       params
     );
 

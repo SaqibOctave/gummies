@@ -33,7 +33,10 @@ export const env = {
   isTest: process.env.NODE_ENV === 'test',
   port: optionalNumber('PORT', 4000),
   appUrl: process.env.APP_URL ?? 'http://localhost:4000',
-  clientUrl: process.env.CLIENT_URL ?? 'http://localhost:3000',
+  clientUrls: (process.env.CLIENT_URL ?? 'http://localhost:3000')
+    .split(',')
+    .map((url) => url.trim())
+    .filter(Boolean),
 
   db: {
     connectionString: required('DATABASE_URL'),
