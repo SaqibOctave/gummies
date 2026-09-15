@@ -19,6 +19,7 @@ export interface ProductRecord {
 export interface ProductListItem extends ProductRecord {
   primary_image_url: string | null;
   primary_image_alt: string | null;
+  in_stock: boolean;
 }
 
 export interface ProductVariantRecord {

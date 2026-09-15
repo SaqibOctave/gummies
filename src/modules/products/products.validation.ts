@@ -36,6 +36,11 @@ export const listProductsQuerySchema: Schema = {
   limit: { type: 'integer', required: false, min: 1, max: 100 },
   categoryId: { type: 'uuid', required: false },
   search: { type: 'string', required: false, max: 200 },
+  sort: {
+    type: 'enum',
+    required: false,
+    enumValues: ['newest', 'price_asc', 'price_desc', 'name_asc', 'best_selling'],
+  },
 };
 
 export const createVariantSchema: Schema = {

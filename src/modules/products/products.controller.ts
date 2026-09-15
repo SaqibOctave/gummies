@@ -3,6 +3,7 @@ import { asyncHandler, sendCreated, sendSuccess, sendNoContent } from '../../com
 import { parsePagination, buildPaginationMeta } from '../../common/types/pagination';
 import { productsService } from './products.service';
 import { auditLogService } from '../audit/audit.service';
+import { ProductSort } from './products.repository';
 
 export const productsController = {
   create: asyncHandler(async (req: Request, res: Response) => {
@@ -23,9 +24,9 @@ export const productsController = {
   list: asyncHandler(async (req: Request, res: Response) => {
     const { page, limit } = parsePagination(req.query as Record<string, unknown>);
     const activeOnly = !req.admin;
-    const { categoryId, search } = req.query as Record<string, string>;
+    const { categoryId, search, sort } = req.query as Record<string, string>;
     const { items, total } = await productsService.list(
-      { categoryId, search, activeOnly },
+      { categoryId, search, activeOnly, sort: sort as ProductSort | undefined },
       page,
       limit
     );

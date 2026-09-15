@@ -11,6 +11,7 @@ export interface Product {
   updated_at: string
   primary_image_url: string | null
   primary_image_alt: string | null
+  in_stock: boolean
 }
 
 export interface ProductVariant {

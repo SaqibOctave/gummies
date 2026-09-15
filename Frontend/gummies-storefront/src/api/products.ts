@@ -2,11 +2,14 @@ import { httpClient } from './httpClient'
 import type { PaginatedResult } from '@/types/pagination'
 import type { Product, ProductDetail } from '@/types/product'
 
+export type ProductSort = 'newest' | 'price_asc' | 'price_desc' | 'name_asc' | 'best_selling'
+
 export interface ListProductsParams {
   page?: number
   limit?: number
   categoryId?: string
   search?: string
+  sort?: ProductSort
 }
 
 function toQueryString(params: object): string {

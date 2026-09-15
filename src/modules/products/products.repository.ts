@@ -24,11 +24,24 @@ export interface UpdateProductInput {
   isActive?: boolean;
 }
 
+export type ProductSort = 'newest' | 'price_asc' | 'price_desc' | 'name_asc' | 'best_selling';
+
 export interface ProductListFilter {
   categoryId?: string;
   search?: string;
   activeOnly?: boolean;
+  sort?: ProductSort;
 }
+
+const REVENUE_COUNTED_STATUSES = ['confirmed', 'processing', 'shipped', 'delivered'];
+
+const SORT_CLAUSES: Record<ProductSort, string> = {
+  newest: 'p.created_at DESC',
+  price_asc: 'p.base_price ASC, p.created_at DESC',
+  price_desc: 'p.base_price DESC, p.created_at DESC',
+  name_asc: 'p.name ASC',
+  best_selling: 'COALESCE(sold.total_quantity, 0) DESC, p.created_at DESC',
+};
 
 export const productsRepository = {
   async create(input: CreateProductInput): Promise<ProductRecord> {
@@ -82,9 +95,23 @@ export const productsRepository = {
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const countParams = [...params];
+    const sort = filter.sort ?? 'newest';
+
+    const soldJoin =
+      sort === 'best_selling'
+        ? `LEFT JOIN LATERAL (
+             SELECT SUM(oi.quantity) AS total_quantity
+             FROM order_items oi
+             JOIN orders o ON o.id = oi.order_id
+             WHERE oi.product_id = p.id AND o.status = ANY($${params.length + 1})
+           ) sold ON true`
+        : '';
+    if (sort === 'best_selling') params.push(REVENUE_COUNTED_STATUSES);
 
     const items = await query<ProductListItem>(
-      `SELECT p.*, img.url AS primary_image_url, img.alt_text AS primary_image_alt
+      `SELECT p.*, img.url AS primary_image_url, img.alt_text AS primary_image_alt,
+              COALESCE(stock.available, true) AS in_stock
        FROM products p
        LEFT JOIN LATERAL (
          SELECT m.url, m.alt_text
@@ -94,13 +121,20 @@ export const productsRepository = {
          ORDER BY pi.is_primary DESC, pi.sort_order ASC
          LIMIT 1
        ) img ON true
+       LEFT JOIN LATERAL (
+         SELECT bool_or(COALESCE(i.quantity_on_hand, 0) - COALESCE(i.quantity_reserved, 0) > 0) AS available
+         FROM product_variants v
+         LEFT JOIN inventory i ON i.variant_id = v.id
+         WHERE v.product_id = p.id AND v.is_active = true
+       ) stock ON true
+       ${soldJoin}
        ${where}
-       ORDER BY p.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+       ORDER BY ${SORT_CLAUSES[sort]} LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
       [...params, limit, offset]
     );
     const count = await query<{ count: string }>(
       `SELECT COUNT(*)::text AS count FROM products p ${where}`,
-      params
+      countParams
     );
 
     return { items: items.rows, total: Number(count.rows[0].count) };
