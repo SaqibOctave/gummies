@@ -5,7 +5,6 @@ import { toast } from 'sonner'
 import { useProductsQuery, useDeleteProductMutation } from '@/hooks/useProducts'
 import { useCategoriesQuery } from '@/hooks/useCategories'
 import { ProductsTable } from '@/components/products/ProductsTable'
-import { ProductCreateDialog } from '@/components/products/ProductCreateDialog'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Pagination } from '@/components/ui/Pagination'
 import { ApiError } from '@/api/httpClient'
@@ -19,7 +18,6 @@ export function Products() {
   const [search, setSearch] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [page, setPage] = useState(1)
-  const [createOpen, setCreateOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
 
   useEffect(() => {
@@ -70,7 +68,7 @@ export function Products() {
           </button>
           <button
             type="button"
-            onClick={() => setCreateOpen(true)}
+            onClick={() => navigate('/products/new')}
             className="flex items-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
           >
             <Plus size={16} />
@@ -125,8 +123,6 @@ export function Products() {
           </>
         )}
       </div>
-
-      <ProductCreateDialog open={createOpen} onOpenChange={setCreateOpen} categories={categories} />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
