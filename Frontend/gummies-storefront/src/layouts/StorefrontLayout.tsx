@@ -20,7 +20,7 @@ export function StorefrontLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
       <header className="bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-6 py-4">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-4 px-6 py-4">
           <Link to="/" className="shrink-0 text-xl font-extrabold text-blue-800">
             {storeName}
           </Link>
@@ -65,7 +65,7 @@ export function StorefrontLayout() {
         </div>
 
         <nav className="border-t border-b border-slate-200">
-          <div className="mx-auto flex max-w-6xl items-center gap-1 px-6 py-2.5 text-sm font-medium">
+          <div className="mx-auto flex max-w-[1600px] items-center gap-1 px-6 py-2.5 text-sm font-medium">
             <Link
               to="/products"
               className="mr-2 rounded-md bg-blue-800 px-4 py-1.5 font-semibold text-white transition hover:bg-blue-900"
@@ -85,12 +85,12 @@ export function StorefrontLayout() {
         </nav>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">
+      <main className="mx-auto w-full max-w-[1600px] flex-1 px-6 py-10">
         <Outlet />
       </main>
 
       <footer className="bg-blue-900">
-        <div className="mx-auto max-w-6xl px-6 py-6">
+        <div className="mx-auto max-w-[1600px] px-6 py-6">
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white px-6 py-5">
             <div>
               <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">Customer support</p>
@@ -103,7 +103,7 @@ export function StorefrontLayout() {
           </div>
         </div>
 
-        <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-[1600px] gap-8 px-6 py-10 sm:grid-cols-3">
           <div>
             <p className="text-lg font-extrabold text-white">{storeName}</p>
             <p className="mt-2 max-w-xs text-sm text-blue-200">
@@ -135,7 +135,7 @@ export function StorefrontLayout() {
         </div>
 
         <div className="border-t border-blue-800">
-          <div className="mx-auto max-w-6xl px-6 py-4 text-xs text-blue-300">
+          <div className="mx-auto max-w-[1600px] px-6 py-4 text-xs text-blue-300">
             &copy; {new Date().getFullYear()} {storeName}. All rights reserved.
           </div>
         </div>
